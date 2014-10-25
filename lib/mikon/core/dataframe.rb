@@ -68,6 +68,11 @@ module Mikon
       # DataFrame should have index object
       @index = (0..(length-1)).to_a if @index.nil?
       raise "index should have the same length as arrays" if @index.length != length
+
+      # Labels should be an instance of Symbol
+      if @labels.any?{|label| !label.is_a?(Symbol)}
+        @labels = @labels.map{|label| label.to_sym}
+      end
     end
 
     def length
@@ -121,11 +126,11 @@ module Mikon
     end
 
     def to_json
-      str=""
+      rows = []
       self.each_row do |row|
-        str += row.to_hash.to_json
+        rows.push(row.to_hash)
       end
-      str
+      rows.to_json
     end
 
     def to_html
