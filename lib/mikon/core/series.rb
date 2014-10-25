@@ -1,18 +1,19 @@
 module Mikon
-  include Enumerable
-
   class Series
+    include Enumerable
+
     def initialize(name, source, options={})
       options = {
         index: nil
       }
 
       case
-      when source.is_a? Array || source.is_a? NMatrix
+      when source.is_a?(Array) || source.is_a?(NMatrix)
         @data = Mikon::DArray.new(source)
-      when source.is_a? Mikon::DArray
+      when source.is_a?(Mikon::DArray)
         @data = source
-      else raise "Non-acceptable Arguments Error"
+      else
+        raise "Non-acceptable Arguments Error"
       end
 
       @index = options[:index]
@@ -21,10 +22,13 @@ module Mikon
       _check_is_valid
     end
 
-    private
     def _check_is_valid
       @index = (0..(length-1)).to_a if @index.nil?
       raise "index should have the same length as arrays" if @index.length != @data.length
+    end
+
+    def length
+      @data.length
     end
 
     def each(block)
@@ -36,5 +40,7 @@ module Mikon
       raise "There is no index named" + arg.to_s if pos.nil?
       @data[pos]
     end
+
+    private :_check_is_valid
   end
 end

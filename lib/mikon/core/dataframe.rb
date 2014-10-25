@@ -1,5 +1,5 @@
 require 'securerandom'
-require json
+require 'json'
 
 module Mikon
   class DataFrame
@@ -8,29 +8,29 @@ module Mikon
     def initialize(source, options={})
       options = {
         name: SecureRandom.uuid(),
-        index: nil
+        index: nil,
         columns: nil
       }.merge(options)
 
       case
-      when source.is_a? Array
+      when source.is_a?(Array)
         case
-        when source.all? {|el| el.is_a? Mikon::Series}
+        when source.all? {|el| el.is_a?(Mikon::Series)}
           raise "NotImplementedError"
 
-        when source.all? {|el| el.is_a? Mikon::Row}
+        when source.all? {|el| el.is_a?(Mikon::Row)}
           @labels = source.first.labels
           @data = source.map{|row| row.to_hash.values}.transpose.map do |arr|
             Mikon::DArray.new(arr)
           end
 
-        when source.all? {|el| el.is_a? Hash}
+        when source.all? {|el| el.is_a?(Hash)}
           @labels = source.first.keys
           @data = source.map{|hash| hash.values}.transpose.map do |arr|
             Mikon::DArray.new(arr)
           end
 
-        when source.all? {|el| el.is_a? Array}
+        when source.all? {|el| el.is_a?(Array)}
           raise "options[:index] should be set." if options[:index].nil?
           @labels = options[:index]
           @data = source.map do |arr|
@@ -40,14 +40,14 @@ module Mikon
         else raise "Non-acceptable Arguments Error"
         end
 
-      when source.is_a? Hash
+      when source.is_a?(Hash)
         case
-        when source.values.all? {|val| val.is_a? Array}
+        when source.values.all? {|val| val.is_a?(Array)}
           @labels = source.keys
           @data = source.values.map do |arr|
             Mikon::DArray.new(arr)
           end
-        when source.all? {|arr| arr[1].is_a? Series}
+        when source.all? {|arr| arr[1].is_a?(Series)}
         else raise "Non-acceptable Arguments Error"
         end
 
@@ -60,10 +60,9 @@ module Mikon
       _check_is_valid
     end
 
-    private
     def _check_is_valid
       # All array should should have the same length
-      length = @data.max_by{|darr| darr.length}
+      length = @data.map{|darr| darr.length}.max
       @data.each{|darr| darr.expand(length) if darr.length < length}
 
       # DataFrame should have index object
@@ -83,7 +82,7 @@ module Mikon
         :header_converters => :symbol
       }.merge(options)
 
-      self.new(, options)
+      self.new([], options)
     end
 
     # Accessor for column and rows
@@ -93,11 +92,11 @@ module Mikon
     #   df[:a] #-> <Mikon::Series>
     def [](arg)
       case
-      when arg.is_a? Range
+      when arg.is_a?(Range)
         index = @index.select{|i| arg.include?(i)}
-        Mikon::DataFrame(new_index.map{|i| self.row(i)}, {index: index})
+        Mikon::DataFrame.new(index.map{|i| self.row(i)}, {index: index})
 
-      when arg.is_a? Symbol
+      when arg.is_a?(Symbol)
         self.column(arg)
       end
     end
@@ -117,7 +116,7 @@ module Mikon
       self[(last-num+1)..last]
     end
 
-    def each(block)
+    def each(&block)
       raise "NotImplementedError"
     end
 
@@ -134,28 +133,30 @@ module Mikon
       html += @labels.map{|label| "<th>" + label.to_s +  "</th>"}.join
       html += "</tr>"
       rows = []
-      self.each_row{|row| rows.push(["<tr>"] + row.arr.map{|el| "<td>" + el.to_s + "<td>"} + ["</tr>"])}
+      self.each_row{|row| rows.push(["<tr>"] + row.arr.map{|el| "<td>" + el.to_s + "</td>"} + ["</tr>"])}
       html += rows.map.with_index{|arr, i| arr.insert(1, "<th>" + @index[i].to_s + "</th>").join}.join
       html += "</table>"
     end
 
-    def select(block)
+    def to_s
+      self.to_html
+    end
+
+    def select(&block)
       rows = []
       self.each_row do |row|
-        rows.push(row) if row.instance_eval(block)
+        rows.push(row) if row.instance_eval(&block)
       end
       Mikon::DataFrame.new(rows, index: @index)
     end
 
-    private
     def row(index)
       pos = @index.index(index)
       arr = @data.map{|column| column[pos]}
-      Mikon::Row(@labels, arr)
+      Mikon::Row.new(@labels, arr)
     end
 
-    private
-    def each_row(block)
+    def each_row(&block)
       @index.each.with_index do |el, i|
         row_arr = @data.map{|darr| darr[i]}
         row = Mikon::Row.new(@labels, row_arr)
@@ -163,7 +164,7 @@ module Mikon
       end
     end
 
-    alias_method :select, :filter
+    alias_method :filter, :select
     attr_reader :name, :index, :labels
   end
 
@@ -176,13 +177,13 @@ module Mikon
 
     def [](name)
       pos = @labels.index(name)
-      pos.nil? nil : @arr[pos]
+      pos.nil? ? nil : @arr[pos]
     end
 
     # @example
     #   row = Row.new([:a, :b, :c], [1, 2, 3])
     #   puts row.instance_eval { a * b * c} #-> 7
-    def method_missing(name, args)
+    def method_missing(name, *args)
       super unless args.length == 0
       pos = @labels.index(name)
       raise "InvalidBlockError" if pos.nil?
@@ -190,8 +191,9 @@ module Mikon
     end
 
     def to_hash
-      @labels.reduce({}).with_index do |memo, label, i|
+      @labels.each.with_index.reduce({}) do |memo, (label, i)|
         memo[label] = @arr[i]
+        memo
       end
     end
 

@@ -1,25 +1,25 @@
 module Mikon
   class DArray
     include Enumerable
+    attr_reader :dtype, :data
 
     def initialize(source, options={})
       case
-      when source.is_a? Array
-        if source.all? {|el| el.is_a? Numeric || el.nil?}
+      when source.is_a?(Array)
+        if source.all? {|el| el.is_a?(Numeric) || el.nil?}
           @data = NMatrix.new([source.length], source, options)
         else
-          @data = NMatrix.new([source.length], source, options.merge{:dtype => :object})
+          @data = NMatrix.new([source.length], source, options.merge({:dtype => :object}))
         end
 
-      when source.is_a? NMatrix
-        unless source.shape.length == 1 && source.shape.first.is_a? Numeric
+      when source.is_a?(NMatrix)
+        unless source.shape.length == 1 && source.shape.first.is_a?(Numeric)
           raise "Matrix shape is not valid"
         end
         @data = source
-
-      else raise "Non-acceptable Arguments Error"
+      else
+        raise "Non-acceptable Argument Error"
       end
-
       @dtype = @data.dtype
     end
 
@@ -40,7 +40,5 @@ module Mikon
     def [](pos)
       @data[pos]
     end
-
-    attr_reader :dtype, :data
   end
 end

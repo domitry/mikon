@@ -1,3 +1,4 @@
+require 'nmatrix'
 require_relative "mikon/version"
 require_relative "mikon/plot"
 require_relative "mikon/core/array"
