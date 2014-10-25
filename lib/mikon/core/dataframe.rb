@@ -9,7 +9,7 @@ module Mikon
       options = {
         name: SecureRandom.uuid(),
         index: nil,
-        columns: nil
+        labels: nil
       }.merge(options)
 
       case
@@ -20,6 +20,7 @@ module Mikon
 
         when source.all? {|el| el.is_a?(Mikon::Row)}
           @labels = source.first.labels
+          @index = source.map{|row| row.index}
           @data = source.map{|row| row.to_hash.values}.transpose.map do |arr|
             Mikon::DArray.new(arr)
           end
@@ -149,22 +150,50 @@ module Mikon
 
     def select(&block)
       rows = []
+      i = 0
       self.each_row do |row|
-        rows.push(row) if row.instance_eval(&block)
+        if row.instance_eval(&block)
+          rows.push(row)
+        end
       end
-      Mikon::DataFrame.new(rows, index: @index)
+      Mikon::DataFrame.new(rows)
+    end
+
+    # @example
+    #   df = Mikon::DataFrame.new({a: [1,2,3], b: [2,3,4]})
+    #   df.insert_column(:c){a + b}.to_json #-> {a: [1,2,3], b: [2,3,4], c: [3, 5, 7]}
+    #   df.insert_column(:d, [1, 2, 3]).to_json #-> {a: [1,2,3], b: [2,3,4], c: [3, 5, 7], d: [1, 2, 3]}
+    #
+    def insert_column(name, arr=[], &block)
+      rows = []
+      if block_given?
+        self.each_row do |row|
+          val = row.instance_eval(&block)
+          row[name] = val
+          rows.push(row)
+        end
+        @data = rows.map{|row| row.to_hash.values}.transpose.map do |arr|
+          Mikon::DArray.new(arr)
+        end
+        @labels = rows.first.labels
+      else
+        @data.push(Mikon::DArray.new(arr))
+        @labels.push(name)
+      end
+      _check_is_valid
+      return self
     end
 
     def row(index)
       pos = @index.index(index)
       arr = @data.map{|column| column[pos]}
-      Mikon::Row.new(@labels, arr)
+      Mikon::Row.new(@labels, arr, index)
     end
 
     def each_row(&block)
       @index.each.with_index do |el, i|
         row_arr = @data.map{|darr| darr[i]}
-        row = Mikon::Row.new(@labels, row_arr)
+        row = Mikon::Row.new(@labels, row_arr, @index[i])
         block.call(row)
       end
     end
@@ -175,9 +204,10 @@ module Mikon
 
   # Row class for internal use
   class Row
-    def initialize(labels, arr)
+    def initialize(labels, arr, index)
       @labels = labels
       @arr = arr
+      @index = index
     end
 
     def [](name)
@@ -185,8 +215,18 @@ module Mikon
       pos.nil? ? nil : @arr[pos]
     end
 
+    def []=(name, val)
+      pos = @labels.index(name)
+      if pos.nil?
+        @labels.push(name)
+        @arr.push(val)
+      else
+        @arr[pos] = val
+      end
+    end
+
     # @example
-    #   row = Row.new([:a, :b, :c], [1, 2, 3])
+    #   row = Row.new([:a, :b, :c], [1, 2, 3], :example_row)
     #   puts row.instance_eval { a * b * c} #-> 7
     def method_missing(name, *args)
       super unless args.length == 0
@@ -202,6 +242,6 @@ module Mikon
       end
     end
 
-    attr_reader :labels, :arr
+    attr_reader :labels, :arr, :index
   end
 end
