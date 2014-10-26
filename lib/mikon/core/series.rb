@@ -5,7 +5,7 @@ module Mikon
     include Enumerable
     extend Forwardable
     def_delegators :@data, :max, :min
-    def_delegators :@data, *Mikon::Stats.instance_methods
+    def_delegators :@data, *(Mikon::Stats.instance_methods)
     attr_reader :index, :name
 
     def initialize(name, source, options={})

@@ -38,6 +38,10 @@ module Mikon
       @data.each(&block)
     end
 
+    def reduce(init, &block)
+      @data.inject_rank(0, init, &block).first
+    end
+
     def expand(length)
       raise "The argument 'length' should be greater than length of now." if length < self.length
       data = NMatrix.new([expand], @data.to_a)
@@ -94,6 +98,10 @@ module Mikon
 
     def length
       @data.length
+    end
+
+    def reduce(init, &block)
+      @data.reduce(int, &block)
     end
   end
 end
