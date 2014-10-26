@@ -36,12 +36,12 @@ module Mikon
     end
 
     def [](arg)
-      pos = @arg.index(arg)
+      pos = @index.index(arg)
       raise "There is no index named" + arg.to_s if pos.nil?
       @data[pos]
     end
 
-    def to_html(threshold=50)
+    def to_html(threshold=3)
       html = "<table><tr><th></th><th>" + self.name.to_s + "</th></tr>"
       @index.each.with_index do |index, pos|
         next if pos > threshold && pos != self.length-1
@@ -51,7 +51,15 @@ module Mikon
       html + "</table>"
     end
 
-    attr_reader :name
+    def name(new_name=nil)
+      if new_name.nil?
+        @name
+      else
+        @name = new_name
+        self
+      end
+    end
+
     private :_check_if_valid
   end
 end
