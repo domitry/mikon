@@ -41,6 +41,15 @@ module Mikon
       @data[pos]
     end
 
+    def to_html
+      html = "<table><tr><th></th><th>" + self.name.to_s + "</th></tr>"
+      html += @index.map.with_index do |index, pos|
+        "<tr><th>" + index.to_s + "</th><td>" + @data[pos].to_s + "</td></tr>"
+      end.join
+      html + "</table>"
+    end
+
+    attr_reader :name
     private :_check_is_valid
   end
 end
