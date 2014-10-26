@@ -19,10 +19,10 @@ module Mikon
       @index = options[:index]
       @name = name
 
-      _check_is_valid
+      _check_if_valid
     end
 
-    def _check_is_valid
+    def _check_if_valid
       @index = (0..(length-1)).to_a if @index.nil?
       raise "index should have the same length as arrays" if @index.length != @data.length
     end
@@ -50,6 +50,6 @@ module Mikon
     end
 
     attr_reader :name
-    private :_check_is_valid
+    private :_check_if_valid
   end
 end

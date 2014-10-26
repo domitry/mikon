@@ -57,10 +57,10 @@ module Mikon
       @index = options[:index]
       @name = options[:name]
 
-      _check_is_valid
+      _check_if_valid
     end
 
-    def _check_is_valid
+    def _check_if_valid
       # All array should should have the same length
       length = @data.map{|darr| darr.length}.max
       @data.each{|darr| darr.expand(length) if darr.length < length}
@@ -202,7 +202,7 @@ module Mikon
         @data.push(Mikon::DArray.new(arr))
         @labels.push(name)
       end
-      _check_is_valid
+      _check_if_valid
       return self
     end
 
@@ -252,8 +252,7 @@ module Mikon
     def method_missing(name, *args)
       super unless args.length == 0
       pos = @labels.index(name)
-      raise "InvalidBlockError" if pos.nil?
-      @arr[pos]
+      pos.nil? ? super : @arr[pos]
     end
 
     def to_hash
