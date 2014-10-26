@@ -1,12 +1,14 @@
+require 'forwardable'
+
 module Mikon
   module Stats
     extend Forwardable
-    def_delegators @data, :size, :*, :+, :-, :==, :[], :[]=, :max, :min, :push
-    alias_method :size, :n
-    alias_method :standard_deviation_sample, :sd
-    alias_method :standard_deviation_sample, :sds
-    alias_method :standard_deviation_population, :sdp
-    alias_method :standard_error, :se
+    def_delegators :@data, :size, :max, :min, :push
+    alias_method :n, :size
+    # alias_method :standard_deviation_sample, :sd
+    # alias_method :standard_deviation_sample, :sds
+    # alias_method :standard_deviation_population, :sdp
+    # alias_method :standard_error, :se
 
     def median
       self.percentil(50)
@@ -46,9 +48,5 @@ module Mikon
     def mean
       @data.mean.first
     end
-  end
-
-  class DArray
-    include Stats
   end
 end

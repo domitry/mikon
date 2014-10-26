@@ -1,6 +1,12 @@
+require 'forwardable'
+
 module Mikon
   class Series
     include Enumerable
+    extend Forwardable
+    def_delegators :@data, :max, :min
+    def_delegators :@data, *Mikon::Stats.instance_methods
+    attr_reader :index, :name
 
     def initialize(name, source, options={})
       options = {
@@ -57,6 +63,56 @@ module Mikon
       else
         @name = new_name
         self
+      end
+    end
+
+    def *(arg)
+      if arg.is_a?(Numeric)
+        Series.new(self.name, @data*arg, index: self.index)
+      else
+        raise ArgumentError
+      end
+    end
+
+    def /(arg)
+      if arg.is_a?(Numeric)
+        Series.new(self.name, @data/arg, index: self.index)
+      else
+        raise ArgumentError
+      end
+    end
+
+    def %(arg)
+      if arg.is_a?(Numeric)
+        Series.new(self.name, @data%arg, index: self.index)
+      else
+        raise ArgumentError
+      end
+    end
+
+    def -(arg)
+      if arg.is_a?(Mikon::Series) && arg.length == self.length
+        Series.new(self.name, arg.coerce(@data).inject(:-), index: self.index)
+      else
+        raise ArgumentError
+      end
+    end
+
+    def +(arg)
+      if arg.is_a?(Mikon::Series) && arg.length == self.length
+        Series.new(self.name, arg.coerce(@data).inject(:+), index: self.index)
+      else
+        raise ArgumentError
+      end
+    end
+
+    def coerce(other)
+      if other.is_a?(Mikon::DArray)
+        return other, @data
+      elsif other.is_a?(Numeric)
+        return self, other
+      else
+        raise ArgumentError
       end
     end
 

@@ -1,15 +1,26 @@
 module Mikon
   class DArray
-    include Enumerable
+    include Enumerable, Mikon::Stats
     attr_reader :dtype, :data
 
+    # @param [NMatrix|Array] source
+    # @param [Hash] options
     def initialize(source, options={})
       case
       when source.is_a?(Array)
-        if source.all? {|el| el.is_a?(Numeric) || el.nil?}
+        if source.all? {|el| el.is_a?(Numeric)}
           @data = NMatrix.new([source.length], source, options)
         else
-          @data = NMatrix.new([source.length], source, options.merge({:dtype => :object}))
+          #
+          # NMatrix instance whose dtype is :object frequently causes Segmentation Fault
+          # @example
+          #   df = DataFrame.new({a: ["a", "b"], b: [1, 2]})
+          #   df[:a].to_html #-> Segmentation Fault
+          #
+
+          # @data = NMatrix.new([source.length], source, options.merge({:dtype => :object}))
+          extend UseArray
+          @data = Mikon::ArrayWrapper.new(source)
         end
 
       when source.is_a?(NMatrix)
@@ -23,8 +34,8 @@ module Mikon
       @dtype = @data.dtype
     end
 
-    def each(block)
-      @data.each(block)
+    def each(&block)
+      @data.each(&block)
     end
 
     def expand(length)
@@ -39,6 +50,50 @@ module Mikon
 
     def [](pos)
       @data[pos]
+    end
+
+    [:+, :-].each do |op|
+      define_method(op) do |arg|
+        if arg.is_a?(DArray)
+          DArray.new(arg.coerce(@data).inject(op))
+        else
+          super
+        end
+      end
+    end
+
+    [:*, :/, :%].each do |op|
+      define_method(op) do |arg|
+        if arg.is_a?(Numeric)
+          DArray.new(@data.send(op, arg))
+        else
+          super
+        end
+      end
+    end
+
+    def coerce(other)
+      if [NMatrix, Array].any?{|cls| other.is_a?(cls) && @data.is_a?(cls)}
+        return other, @data
+      else
+        super
+      end
+    end
+  end
+
+  class ArrayWrapper < Array
+    def dtype
+      :object
+    end
+  end
+
+  module UseArray
+    def expand(length)
+      @data = @data + Array(length - @data.length, 0)
+    end
+
+    def length
+      @data.length
     end
   end
 end
