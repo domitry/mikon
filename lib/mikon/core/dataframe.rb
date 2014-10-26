@@ -3,7 +3,6 @@ require 'json'
 
 module Mikon
   class DataFrame
-    include Enumerable
 
     def initialize(source, options={})
       options = {
@@ -122,10 +121,6 @@ module Mikon
       self[(last-num+1)..last]
     end
 
-    def each(&block)
-      raise "NotImplementedError"
-    end
-
     def to_json
       rows = []
       self.each_row do |row|
@@ -157,6 +152,37 @@ module Mikon
         end
       end
       Mikon::DataFrame.new(rows)
+    end
+
+    alias_method :filter, :select
+
+    def each(&block)
+      return self.to_enum(:each) unless block_given?
+      self.each_row do |row|
+        row.instance_eval(&block)
+      end
+      self
+    end
+
+    def map(&block)
+      return self.to_enum(:map) unless block_given?
+      arr = []
+      self.each_row do |row|
+        arr.push(row.instance_eval(&block))
+      end
+      Mikon::Series.new(:new_series, arr, index: @index)
+    end
+
+    alias_method :collect, :map
+
+    def all?(&block)
+      self.each_row {|row| return false unless row.instance_eval(&block)}
+      true
+    end
+
+    def any?(&block)
+      self.each_row {|row| return true if row.instance_eval(&block)}
+      false
     end
 
     # @example
@@ -198,7 +224,6 @@ module Mikon
       end
     end
 
-    alias_method :filter, :select
     attr_reader :name, :index, :labels
   end
 
