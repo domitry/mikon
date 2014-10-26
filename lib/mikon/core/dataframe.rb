@@ -1,5 +1,6 @@
 require 'securerandom'
 require 'json'
+require 'csv'
 
 module Mikon
   class DataFrame
@@ -75,19 +76,36 @@ module Mikon
       end
     end
 
+    # return the length of columns
     def length
       @data.first.length
     end
 
-    def from_csv(url, options={})
-      options = {
+    # Create Mikon::DataFrame from a csv/tsv file
+    # @param [String] path path to csv
+    # @param options
+    #   :col_sep [String] string to separate by
+    #   :headers [Array] headers
+    #
+    def self.from_csv(path, options={})
+      csv_options = {
         :col_sep => ',',
         :headers => true,
         :converters => :numeric,
-        :header_converters => :symbol
-      }.merge(options)
+        :header_converters => :symbol,
+      }
 
-      self.new([], options)
+      options = csv_options.merge(options)
+      raise ArgumentError, "options[:hearders] should be set" if options[:headers] == false
+
+      csv = CSV.readlines(path, "r", options)
+      yield csv if block_given?
+
+      hash = {}
+      csv.by_col.each {|label, arr| hash[label] = arr}
+      csv_options.keys.each{|key| options.delete(key)}
+
+      self.new(hash, options)
     end
 
     # Accessor for column and rows
@@ -129,13 +147,17 @@ module Mikon
       rows.to_json
     end
 
-    def to_html
+    def to_html(threshold=50)
       html = "<html><table><tr><td></td>"
       html += @labels.map{|label| "<th>" + label.to_s +  "</th>"}.join
       html += "</tr>"
-      rows = []
-      self.each_row{|row| rows.push(["<tr>"] + row.arr.map{|el| "<td>" + el.to_s + "</td>"} + ["</tr>"])}
-      html += rows.map.with_index{|arr, i| arr.insert(1, "<th>" + @index[i].to_s + "</th>").join}.join
+      self.each_row.with_index do |row, pos|
+        next if pos > threshold && pos != self.length-1
+        html += "<tr><th>" + @index[pos].to_s + "</th>"
+        html += @labels.map{|label| "<td>" + row[label].to_s + "</td>"}.join
+        html += "</tr>"
+        html += "<tr><th>...</th>" + "<td>...</td>"*@labels.length + "</tr>" if pos == threshold
+      end
       html += "</table>"
     end
 
@@ -213,6 +235,7 @@ module Mikon
     end
 
     def each_row(&block)
+      return self.to_enum(:each_row) unless block_given?
       @index.each.with_index do |el, i|
         row_arr = @data.map{|darr| darr[i]}
         row = Mikon::Row.new(@labels, row_arr, @index[i])

@@ -41,11 +41,13 @@ module Mikon
       @data[pos]
     end
 
-    def to_html
+    def to_html(threshold=50)
       html = "<table><tr><th></th><th>" + self.name.to_s + "</th></tr>"
-      html += @index.map.with_index do |index, pos|
-        "<tr><th>" + index.to_s + "</th><td>" + @data[pos].to_s + "</td></tr>"
-      end.join
+      @index.each.with_index do |index, pos|
+        next if pos > threshold && pos != self.length-1
+        html += "<tr><th>" + index.to_s + "</th><td>" + @data[pos].to_s + "</td></tr>"
+        html += "<tr><th>...</th><td>...</td></tr>" if pos == threshold
+      end
       html + "</table>"
     end
 
