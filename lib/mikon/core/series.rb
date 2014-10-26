@@ -37,8 +37,8 @@ module Mikon
       @data.length
     end
 
-    def each(block)
-      @data.each(block)
+    def each(&block)
+      @data.each(&block)
     end
 
     def [](arg)
