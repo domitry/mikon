@@ -139,10 +139,6 @@ module Mikon
       html += "</table>"
     end
 
-    def to_s
-      self.to_html
-    end
-
     def select(&block)
       rows = []
       i = 0
