@@ -83,6 +83,10 @@ module Mikon
         super
       end
     end
+
+    def to_a
+      @data.to_a
+    end
   end
 
   class ArrayWrapper < Array
