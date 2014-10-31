@@ -3,6 +3,9 @@ require 'json'
 require 'csv'
 
 module Mikon
+
+  # The main data structure in Mikon gem.
+  # DataFrame consists of labels(column name), index(row name), and labels.
   class DataFrame
 
     def initialize(source, options={})
@@ -18,6 +21,9 @@ module Mikon
         when source.all? {|el| el.is_a?(Mikon::Series)}
           raise "NotImplementedError"
 
+        when source.all? {|el| el.is_a?(Mikon::DArray)}
+          @data = source
+
         when source.all? {|el| el.is_a?(Mikon::Row)}
           @labels = source.first.labels
           @index = source.map{|row| row.index}
@@ -32,8 +38,6 @@ module Mikon
           end
 
         when source.all? {|el| el.is_a?(Array)}
-          raise "options[:index] should be set." if options[:index].nil?
-          @labels = options[:index]
           @data = source.map do |arr|
             Mikon::DArray.new(arr)
           end
@@ -55,8 +59,22 @@ module Mikon
       else raise "Non-acceptable Arguments Error"
       end
 
-      @index = options[:index]
+      @labels = options[:labels] unless options[:labels].nil?
       @name = options[:name]
+
+      unless (index = options[:index]).nil?
+        if index.is_a?(Symbol)
+          raise "labels should be set" if @labels.nil?
+          pos = @labels.index(index)
+          raise "Thre is no column named" + index.to_s if pos.nil?
+          name = @labels.delete(index)
+          @index = @data.delete(@data[pos])
+        elsif index.is_a?(Array)
+          @index = index
+        else
+          raise "Invalid index type"
+        end
+      end
 
       _check_if_valid
     end
@@ -71,7 +89,9 @@ module Mikon
       raise "index should have the same length as arrays" if @index.length != length
 
       # Labels should be an instance of Symbol
-      if @labels.any?{|label| !label.is_a?(Symbol)}
+      if @labels.nil?
+        @labels = @data.map.with_index{|darr, i| i.to_s.to_sym}
+      elsif @labels.any?{|label| !label.is_a?(Symbol)}
         @labels = @labels.map{|label| label.to_sym}
       end
     end
@@ -139,7 +159,7 @@ module Mikon
       self[(last-num+1)..last]
     end
 
-    def to_json
+    def to_json(*args)
       rows = []
       self.each_row do |row|
         rows.push(row.to_hash)
@@ -203,6 +223,23 @@ module Mikon
       false
     end
 
+    def sort_by(ascending=true, &block)
+      return self.to_enum(:sort_by) unless block_given?
+      order = self.map(&block).to_darr.sorted_indices
+      order.reverse! unless ascending
+      data = @data.map{|darr| darr.sort_by.with_index{|val, i| order.index(i)}}
+      index = @index.sort_by.with_index{|val, i| order[i]}
+      Mikon::DataFrame.new(data, {index: index, labels: @labels})
+    end
+
+    def sort(label, ascending=true)
+      i = @labels.index(label)
+      raise "No column named" + label.to_s if i.nil?
+      order = @data[i].sorted_indices
+      order.reverse! unless ascending
+      self.sort_by.with_index{|val, i| order.index(i)}
+    end
+
     # @example
     #   df = Mikon::DataFrame.new({a: [1,2,3], b: [2,3,4]})
     #   df.insert_column(:c){a + b}.to_json #-> {a: [1,2,3], b: [2,3,4], c: [3, 5, 7]}
@@ -254,7 +291,7 @@ module Mikon
       @index = index
     end
 
-    def [](name)
+    def [](name)p
       pos = @labels.index(name)
       pos.nil? ? nil : @arr[pos]
     end

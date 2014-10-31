@@ -66,6 +66,14 @@ module Mikon
       end
     end
 
+    def to_a
+      @data.to_a
+    end
+
+    def to_darr
+      @data
+    end
+
     def *(arg)
       if arg.is_a?(Numeric)
         Series.new(self.name, @data*arg, index: self.index)

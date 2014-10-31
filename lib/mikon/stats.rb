@@ -5,7 +5,7 @@ require 'forwardable'
 module Mikon
   module Stats
     extend Forwardable
-    def_delegators :@data, :size, :max, :min, :push
+    def_delegators :@data, :size, :max, :min, :push, :sorted_indices
 
     def average_deviation_population(m=nil)
       m ||= self.mean

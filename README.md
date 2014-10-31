@@ -8,7 +8,7 @@ Features:
 
 ## Dependencies
 * CRuby >= 2.0.0-p451
-* NMatrix: >= v0.1.0.rc5
+* NMatrix  >= v0.1.0.rc5
 
 ### Optional Dependencies
 * Nyaplot: for plotting
@@ -131,10 +131,10 @@ Statsample::Analysis.run_batch
 ![statsample](https://dl.dropboxusercontent.com/u/47978121/mikon/statsample.png)
 
 ## License
-MIT License
+The MIT License
 
 ## Acknowledgement
-Mikon has been developed using [Ruby Association Grant 2014](http://www.ruby.or.jp/en/news/20140805.html).
+[Ruby Association Grant 2014](http://www.ruby.or.jp/en/news/20140805.html) has been earmarked for the development of Mikon.
 
 ## Contributing
 

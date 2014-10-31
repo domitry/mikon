@@ -56,6 +56,20 @@ module Mikon
       @data[pos]
     end
 
+    def sort
+      Mikon::DArray.new(@data.sort)
+    end
+
+    def sort_by(&block)
+      return self.to_enum(:sort_by) unless block_given?
+      Mikon::DArray.new(@data.sort_by(&block))
+    end
+
+    def reverse
+      len = self.length
+      Mikon::DArray.new(@data.map.with_index{|v, i| @data[self.length-i-1]})
+    end
+
     [:+, :-].each do |op|
       define_method(op) do |arg|
         if arg.is_a?(DArray)
@@ -106,6 +120,10 @@ module Mikon
 
     def reduce(init, &block)
       @data.reduce(int, &block)
+    end
+
+    def sorted_indices
+      @data.map.with_index.sort_by(&:first).map(&:last)
     end
   end
 end
