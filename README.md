@@ -1,6 +1,7 @@
 # ☗ Mikon
 Mikon is a flexible data structure for Ruby language, inspired by data.frame of R and Pandas of Python.
 
+Features:
 * Fast data manipulation with [NMatrix](https://github.com/SciRuby/nmatrix)
 * Compatibility with [Statsample::Vector](https://github.com/clbustos/statsample) 
 * Advanced plotting with [Nyaplot](https://github.com/domitry/nyaplot)
@@ -86,10 +87,10 @@ df.all?{valu > 1} #-> false
 ```
 
 ### Column-based data manipulating
-In most cases column-based manipulating is *faster than Row-based*.
+In most cases column-based manipulating is **faster than Row-based**.
 
 ```ruby
-df[:b] - df[:a]
+df2[:b] - df2[:a]
 ```
 ![column_base0](https://dl.dropboxusercontent.com/u/47978121/mikon/column-base0.png)
 
@@ -114,6 +115,9 @@ plot
 ![hist](https://dl.dropboxusercontent.com/u/47978121/mikon/hist.png)
 
 ### Statistical with Statsample
+
+`Mikon::Series` is compatible with `Statsample::Vector`, so most methods of Statsample can be applied to `Mikon::Series`.
+
 ```
 require 'statsample'
 
