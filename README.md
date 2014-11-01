@@ -1,22 +1,36 @@
 # ☗ Mikon
-Mikon is a flexible data structure for Ruby language, inspired by data.frame of R and Pandas of Python.
+![top](https://dl.dropboxusercontent.com/u/47978121/mikon/top.png)
 
-Features:
+Mikon is a flexible data structure for Ruby language, inspired by data.frame of R and Pandas of Python.
+Its goal is to make it easy to manipulate the real data, apply statistical function to it and visualize the result in Ruby language.
+
+It is compatible with `Nyaplot::DataFrame` and `Statsample::Vector`, and most methods the both gem have can be applied to Mikon's data structure.
+
+
+Main Features:
 * Fast data manipulation with [NMatrix](https://github.com/SciRuby/nmatrix)
-* Compatibility with [Statsample::Vector](https://github.com/clbustos/statsample) 
 * Advanced plotting with [Nyaplot](https://github.com/domitry/nyaplot)
 
 ## Dependencies
 * CRuby >= 2.0.0-p451
-* NMatrix  >= v0.1.0.rc5
+* [NMatrix](https://github.com/SciRuby/nmatrix) >= v0.1.0.rc5
+* [Formatador](https://github.com/geemus/formatador) >= 0.2.5
 
 ### Optional Dependencies
-* Nyaplot: for plotting
-* Statsample: for statistical function
+* [Nyaplot](https://github.com/domitry/nyaplot): for plotting
+* [Statsample](https://github.com/clbustos/statsample): for statistical function
+* [IRuby](https://github.com/minad/iruby): for the interactive manipulation of data
 
 ## Installation
 
     $ gem install mikon
+
+## Examples
+Notebooks created with [IRuby](https://github.com/minad/iruby):
+
+* [Basic Data Manipulation](http://nbviewer.ipython.org/urls/dl.dropboxusercontent.com/u/47978121/gsoc/Mikon_Manipuration.ipynb)
+* [Statistical functions](http://nbviewer.ipython.org/urls/dl.dropboxusercontent.com/u/47978121/gsoc/Mikon_stats.ipynb)
+* [Plotting](http://nbviewer.ipython.org/urls/dl.dropboxusercontent.com/u/47978121/gsoc/Plotting.ipynb)
 
 ## Usage
 ### Initializing DataFrame
@@ -131,15 +145,16 @@ Statsample::Analysis.run_batch
 ![statsample](https://dl.dropboxusercontent.com/u/47978121/mikon/statsample.png)
 
 ## License
-The MIT License
+MIT License
 
 ## Acknowledgement
 [Ruby Association Grant 2014](http://www.ruby.or.jp/en/news/20140805.html) has been earmarked for the development of Mikon.
 
 ## Contributing
 
-1. Fork it ( http://github.com/<my-github-username>/mikon/fork )
+1. Fork it ( http://github.com/domitry/mikon/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+4. Run tests by running `rspec` on `/path_to_gem/mikon/`
+5. Push to the branch (`git push origin my-new-feature`)
+6. Create new Pull Request
