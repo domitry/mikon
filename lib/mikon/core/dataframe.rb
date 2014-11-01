@@ -117,6 +117,7 @@ module Mikon
 
       options = csv_options.merge(options)
       raise ArgumentError, "options[:hearders] should be set" if options[:headers] == false
+      options.delete(:header_converters) if options[:headers].is_a?(Array)
 
       csv = CSV.readlines(path, "r", options)
       yield csv if block_given?
@@ -182,6 +183,7 @@ module Mikon
     end
 
     def select(&block)
+      return self.to_enum(:select) unless block_given?
       rows = []
       i = 0
       self.each_row do |row|
@@ -228,7 +230,7 @@ module Mikon
       order = self.map(&block).to_darr.sorted_indices
       order.reverse! unless ascending
       data = @data.map{|darr| darr.sort_by.with_index{|val, i| order.index(i)}}
-      index = @index.sort_by.with_index{|val, i| order[i]}
+      index = @index.sort_by.with_index{|val, i| order.index(i)}
       Mikon::DataFrame.new(data, {index: index, labels: @labels})
     end
 
@@ -245,9 +247,10 @@ module Mikon
     #   df.insert_column(:c){a + b}.to_json #-> {a: [1,2,3], b: [2,3,4], c: [3, 5, 7]}
     #   df.insert_column(:d, [1, 2, 3]).to_json #-> {a: [1,2,3], b: [2,3,4], c: [3, 5, 7], d: [1, 2, 3]}
     #
-    def insert_column(name, arr=[], &block)
-      rows = []
+    def insert_column(*args, &block)
       if block_given?
+        rows = []
+        name = args[0]
         self.each_row do |row|
           val = row.instance_eval(&block)
           row[name] = val
@@ -258,7 +261,22 @@ module Mikon
         end
         @labels = rows.first.labels
       else
-        @data.push(Mikon::DArray.new(arr))
+        if args[0].is_a?(Symbol)
+          name = args[0]
+          case
+          when args[1].is_a?(Mikon::DArray)
+            @data.push(args[1])
+          when args[1].is_a?(Mikon::Series)
+            @data.push(args[1].to_darr)
+          when args[1].is_a?(Array)
+            @data.push(Mikon::DArray.new(args[1]))
+          else
+            raise ArgumentError
+          end
+        elsif args[0].is_a?(Mikon::Series)
+          @data.push(args[0].to_darr)
+          name = args[0].name
+        end
         @labels.push(name)
       end
       _check_if_valid
