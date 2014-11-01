@@ -37,7 +37,7 @@ module Mikon
     # uniq
     def factors
       index = @data.sorted_indices
-      index.reduce([]){|memo, val| memo.push(@data[val]) if memo.last != val}
+      index.reduce([]){|memo, val| memo.push(@data[val]) if memo.last != @data[val]; memo}
     end
 
     def frequencies

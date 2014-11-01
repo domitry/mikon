@@ -101,11 +101,19 @@ module Mikon
     def to_a
       @data.to_a
     end
+
+    def fillna(fill_value=0)
+      @data = @data.map{|val| val.to_f.nan? ? fill_value : val}
+    end
   end
 
   class ArrayWrapper < Array
     def dtype
       :object
+    end
+
+    def sorted_indices
+      self.map.with_index.sort_by(&:first).map(&:last)
     end
   end
 
@@ -120,10 +128,6 @@ module Mikon
 
     def reduce(init, &block)
       @data.reduce(int, &block)
-    end
-
-    def sorted_indices
-      @data.map.with_index.sort_by(&:first).map(&:last)
     end
   end
 end

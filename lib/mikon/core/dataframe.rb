@@ -148,7 +148,7 @@ module Mikon
     def column(label)
       pos = @labels.index(label)
       raise "There is no column named " + label if pos.nil?
-      Mikon::Series.new(label, @data[pos])
+      Mikon::Series.new(label, @data[pos], index: @index)
     end
 
     def head(num)
@@ -210,7 +210,7 @@ module Mikon
       self.each_row do |row|
         arr.push(row.instance_eval(&block))
       end
-      Mikon::Series.new(:new_series, arr, index: @index)
+      Mikon::Series.new(:new_series, arr, index: @index.clone)
     end
 
     alias_method :collect, :map
@@ -298,6 +298,11 @@ module Mikon
       end
     end
 
+    def fillna(value=0)
+      @data.each {|darr| darr.fillna(value)}
+      self
+    end
+
     attr_reader :name, :index, :labels
   end
 
@@ -309,7 +314,7 @@ module Mikon
       @index = index
     end
 
-    def [](name)p
+    def [](name)
       pos = @labels.index(name)
       pos.nil? ? nil : @arr[pos]
     end

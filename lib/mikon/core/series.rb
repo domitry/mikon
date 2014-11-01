@@ -11,7 +11,7 @@ module Mikon
     def initialize(name, source, options={})
       options = {
         index: nil
-      }
+      }.merge(options)
 
       case
       when source.is_a?(Array) || source.is_a?(NMatrix)
