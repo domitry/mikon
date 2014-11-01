@@ -47,7 +47,7 @@ module Mikon
       @data[pos]
     end
 
-    def to_html(threshold=3)
+    def to_html(threshold=5)
       html = "<table><tr><th></th><th>" + self.name.to_s + "</th></tr>"
       @index.each.with_index do |index, pos|
         next if pos > threshold && pos != self.length-1
@@ -55,6 +55,16 @@ module Mikon
         html += "<tr><th>...</th><td>...</td></tr>" if pos == threshold
       end
       html + "</table>"
+    end
+
+    def to_s(threshold=5)
+      arr = []
+      @index.each.with_index do |index, pos|
+        next nil if pos > threshold && pos != self.length-1
+        arr.push({"" => index, @name => @data[pos]})
+        arr.push({"" => "...", @name => "..."}) if pos == threshold
+      end
+      Formatador.display_table(arr.select{|el| !(el.nil?)})
     end
 
     def name(new_name=nil)

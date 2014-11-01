@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'formatador'
 require 'json'
 require 'csv'
 
@@ -180,6 +181,18 @@ module Mikon
         html += "<tr><th>...</th>" + "<td>...</td>"*@labels.length + "</tr>" if pos == threshold
       end
       html += "</table>"
+    end
+
+    def to_s(threshold=50)
+      arr = []
+      self.each_row.with_index do |row, pos|
+        next nil if pos > threshold && pos != self.length-1
+        arr.push({"" => @index[pos]}.merge(row.to_hash))
+        if pos == threshold
+            arr.push(@labels.reduce({"" => "..."}){|memo, label| memo[label] = "..."; memo})
+        end
+      end
+      Formatador.display_table(arr.select{|el| !(el.nil?)})
     end
 
     def select(&block)
