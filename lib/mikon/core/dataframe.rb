@@ -345,6 +345,14 @@ module Mikon
       self
     end
 
+    # Delete column
+    def delete(label)
+      pos = @labels.index(label)
+      raise "there is no column named " + label.to_s if pos.nil?
+      @labels.delete_at(pos)
+      @data.delete_at(pos)
+    end
+
     attr_reader :name, :index, :labels
   end
 
