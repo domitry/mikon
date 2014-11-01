@@ -146,21 +146,25 @@ module Mikon
       end
     end
 
+    # Access column with its name
     def column(label)
       pos = @labels.index(label)
       raise "There is no column named " + label if pos.nil?
       Mikon::Series.new(label, @data[pos], index: @index)
     end
 
+    # same as head of Linux
     def head(num)
       self[0..(num-1)]
     end
 
+    # same as tail of Linux
     def tail(num)
       last = self.length-1
       self[(last-num+1)..last]
     end
 
+    # Compartible with Nyaplot::DataFrame.to_json
     def to_json(*args)
       rows = []
       self.each_row do |row|
@@ -169,6 +173,7 @@ module Mikon
       rows.to_json
     end
 
+    # IRuby notebook automatically call this method
     def to_html(threshold=50)
       html = "<html><table><tr><td></td>"
       html += @labels.map{|label| "<th>" + label.to_s +  "</th>"}.join
@@ -195,6 +200,11 @@ module Mikon
       Formatador.display_table(arr.select{|el| !(el.nil?)})
     end
 
+    # Select rows using Mikon::Row DSL and create new DataFrame
+    # @example
+    #   df = Mikon::DataFrame.new({a: [1,2,3], b: [2,3,4]})
+    #   df.select{a%2==0}[:a].to_a #-> [2]
+    #
     def select(&block)
       return self.to_enum(:select) unless block_given?
       rows = []
@@ -209,6 +219,7 @@ module Mikon
 
     alias_method :filter, :select
 
+    # Iterate rows using Mikon::Row DSL
     def each(&block)
       return self.to_enum(:each) unless block_given?
       self.each_row do |row|
@@ -217,6 +228,7 @@ module Mikon
       self
     end
 
+    # Iterate rows using Mikon::Row DSL and return new Mikon::Series
     def map(&block)
       return self.to_enum(:map) unless block_given?
       arr = []
@@ -228,16 +240,21 @@ module Mikon
 
     alias_method :collect, :map
 
+    # Mikon::Row DSL
     def all?(&block)
       self.each_row {|row| return false unless row.instance_eval(&block)}
       true
     end
 
+    # Mikon::Row DSL
     def any?(&block)
       self.each_row {|row| return true if row.instance_eval(&block)}
       false
     end
 
+    # Sort using Mikon::Row DSL
+    # @param [Bool] ascending default true
+    #
     def sort_by(ascending=true, &block)
       return self.to_enum(:sort_by) unless block_given?
       order = self.map(&block).to_darr.sorted_indices
@@ -247,6 +264,10 @@ module Mikon
       Mikon::DataFrame.new(data, {index: index, labels: @labels})
     end
 
+    # Sort by label
+    # @param [Symbol] label column name to sort by
+    # @param [Bool] ascending default true
+    #
     def sort(label, ascending=true)
       i = @labels.index(label)
       raise "No column named" + label.to_s if i.nil?
@@ -255,10 +276,14 @@ module Mikon
       self.sort_by.with_index{|val, i| order.index(i)}
     end
 
+    # Insert column using Mikon::Row DSL or raw Array
+    # @param [label] Symbol the name of new column (optional)
+    # @param [Array|Series|DArray] the content of new column (optional)
     # @example
     #   df = Mikon::DataFrame.new({a: [1,2,3], b: [2,3,4]})
-    #   df.insert_column(:c){a + b}.to_json #-> {a: [1,2,3], b: [2,3,4], c: [3, 5, 7]}
-    #   df.insert_column(:d, [1, 2, 3]).to_json #-> {a: [1,2,3], b: [2,3,4], c: [3, 5, 7], d: [1, 2, 3]}
+    #   df.insert_column(:c){a + b}.to_json #-> {a: [1,2,3], b: [2,3,4], c: [3,5,7]}
+    #   df.insert_column(:d, [1, 2, 3]).to_json #-> {a: [1,2,3], b: [2,3,4], c: [3,5,7], d: [1,2,3]}
+    #   df.insert_column((df[:d]*2).name(:e)) #-> {a: [1,2,3], b: [2,3,4], c: [3,5,7], d: [1,2,3], e: [2,4,6]
     #
     def insert_column(*args, &block)
       if block_given?
@@ -296,12 +321,14 @@ module Mikon
       return self
     end
 
+    # Access row using index
     def row(index)
       pos = @index.index(index)
       arr = @data.map{|column| column[pos]}
       Mikon::Row.new(@labels, arr, index)
     end
 
+    # Iterate row
     def each_row(&block)
       return self.to_enum(:each_row) unless block_given?
       @index.each.with_index do |el, i|
@@ -311,6 +338,8 @@ module Mikon
       end
     end
 
+    # Replace NaN with specified value (destructive)
+    # @param [Float|Fixnum] value new value to replace NaN
     def fillna(value=0)
       @data.each {|darr| darr.fillna(value)}
       self

@@ -1,4 +1,10 @@
 module Mikon
+
+  # Internal data structure to wrap NMatrix
+  # Its stastical methods (i.e. #median) is compartible with Statsample::Vector's
+  # @example
+  #   Mikon::DArray.new([1, 2, 3]) #-> #<Mikon::DArray:0xbacfc99c @data=[1, 2, 3], @dtype=:int32>
+  #
   class DArray
     include Enumerable, Mikon::Stats
     attr_reader :dtype, :data
