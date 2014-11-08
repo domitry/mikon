@@ -24,7 +24,7 @@ Main Features:
 ## Installation
 
     $ gem install mikon
-    
+
 If you fail to install nmatrix, try:
 
     $ sudo apt-get install libatlas-base-dev
