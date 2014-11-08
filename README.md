@@ -24,12 +24,14 @@ Main Features:
 ## Installation
 
     $ gem install mikon
-    
+
 If you fail to install nmatrix, try:
 
     $ sudo apt-get install libatlas-base-dev
     $ sudo apt-get --purge remove liblapack-dev liblapack3 liblapack3gf
     $ gem install nmatrix -- --with-opt-include=/usr/include/atlas
+
+More detailed instructions are available for [Mac](https://github.com/SciRuby/nmatrix/wiki/Installation#mac-os-x) and [Linux](https://github.com/SciRuby/nmatrix/wiki/Installation#linux).
 
 If you fail to install iruby, try [this](https://github.com/domitry/nyaplot#install-iruby-notebook).
 
