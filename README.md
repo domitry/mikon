@@ -1,4 +1,6 @@
 # ☗ Mikon
+[![Gem Version](https://badge.fury.io/rb/mikon.svg)](http://badge.fury.io/rb/mikon)
+
 ![top](https://dl.dropboxusercontent.com/u/47978121/mikon/top.png)
 
 Mikon is a flexible data structure for Ruby language, inspired by data.frame of R and Pandas of Python.
