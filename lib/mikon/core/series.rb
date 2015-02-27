@@ -4,7 +4,7 @@ module Mikon
   class Series
     include Enumerable
     extend Forwardable
-    def_delegators :@data, :max, :min
+    def_delegators :@data, :max, :min, :uniq
     def_delegators :@data, *(Mikon::Stats.instance_methods)
     attr_reader :index, :name
 
