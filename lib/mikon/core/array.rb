@@ -40,6 +40,10 @@ module Mikon
       @dtype = @data.dtype
     end
 
+    def dup
+      Mikon::DArray.new(@data.dup)
+    end
+
     def each(&block)
       @data.each(&block)
     end

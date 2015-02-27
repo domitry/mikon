@@ -353,6 +353,14 @@ module Mikon
       @data.delete_at(pos)
     end
 
+    def dup
+      Mikon::DataFrame.new(@data.map{|darr| darr.dup}, {index: @index, label: @labels})
+    end
+
+    def dup_only_valid
+      self.dup
+    end
+
     attr_reader :name, :index, :labels
   end
 
