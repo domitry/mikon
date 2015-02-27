@@ -1,4 +1,4 @@
-require 'nyaplot'
+require 'nyaplot' unless defined? Nyaplot
 
 module Mikon
   class Series
