@@ -67,6 +67,10 @@ module Mikon
       Formatador.display_table(arr.select{|el| !(el.nil?)})
     end
 
+    def to_json(*args)
+      @data.to_json
+    end
+
     def name(new_name=nil)
       if new_name.nil?
         @name

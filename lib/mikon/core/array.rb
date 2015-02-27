@@ -104,6 +104,10 @@ module Mikon
       end
     end
 
+    def to_json
+      @data.to_json
+    end
+
     def to_a
       @data.to_a
     end
