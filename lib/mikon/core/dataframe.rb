@@ -19,8 +19,10 @@ module Mikon
       case
       when source.is_a?(Array)
         case
+        when source.length == 0
+          @data = [DArray.new([])]
         when source.all? {|el| el.is_a?(Mikon::Series)}
-          raise "NotImplementedError"
+          raise "NotImplementedError" + source.to_s
 
         when source.all? {|el| el.is_a?(Mikon::DArray)}
           @data = source
